@@ -2,90 +2,27 @@
 function fovy(){
 	// macros
 	#macro G globalvar
-	
+
 	// aligns
-	#macro ALIGN_TOP_LEFT			draw_set_valign(fa_top)			draw_set_halign(fa_left)		
-	#macro ALIGN_TOP_CENTER			draw_set_valign(fa_top)			draw_set_halign(fa_center)		
-	#macro ALIGN_MIDDLE_CENTER		draw_set_valign(fa_middle)		draw_set_halign(fa_center)		
-	#macro ALIGN_MIDDLE_LEFT		draw_set_valign(fa_middle)		draw_set_halign(fa_left)		
-	#macro ALIGN_MIDDLE_RIGHT		draw_set_valign(fa_middle)		draw_set_halign(fa_right)		
-	#macro ALIGN_BOTTOM_RIGHT		draw_set_valign(fa_bottom)		draw_set_halign(fa_right)		
-	#macro ALIGN_BOTTOM_CENTER		draw_set_valign(fa_bottom)		draw_set_halign(fa_center)		
+	#macro ALIGN_TOP_LEFT			draw_set_valign(fa_top)			draw_set_halign(fa_left)
+	#macro ALIGN_TOP_CENTER			draw_set_valign(fa_top)			draw_set_halign(fa_center)
+	#macro ALIGN_MIDDLE_CENTER		draw_set_valign(fa_middle)		draw_set_halign(fa_center)
+	#macro ALIGN_MIDDLE_LEFT		draw_set_valign(fa_middle)		draw_set_halign(fa_left)
+	#macro ALIGN_MIDDLE_RIGHT		draw_set_valign(fa_middle)		draw_set_halign(fa_right)
+	#macro ALIGN_BOTTOM_LEFT		draw_set_valign(fa_bottom)		draw_set_halign(fa_left)
+	#macro ALIGN_BOTTOM_RIGHT		draw_set_valign(fa_bottom)		draw_set_halign(fa_right)
+	#macro ALIGN_BOTTOM_CENTER		draw_set_valign(fa_bottom)		draw_set_halign(fa_center)
 	
-	#macro SPRITE_STACKED_OFFSET 0.75
+	#macro SPRITE_STACKED_OFFSET 1
 	#macro print show_debug_message
 	
 	#macro WIDTH display_get_gui_width()
 	#macro HEIGHT display_get_gui_height()
-	
+
 	enum BUTTON_ORIGIN {
 		Left,
 		MiddleCenter,
 	}
-}
-
-function draw_game_info(){
-	
-	if (!Debug.showInfo) return;
-	
-	draw_set_font(fnt_main);
-	
-	content = [];
-	_ = function(s, color=c_white){array_push(content,{text:s,color})}
-	
-	var separator = function(title="", color=c_gray){
-		var size = 60;
-		var len = string_length(title);
-		len = (len == 0) ? 0 : len;
-		
-		var left  = (size / 2) - ceil( len / 2);
-		var right = (size / 2) - floor(len / 2);
-		
-		var s = "=";
-		var final = string_repeat(s, left) + string_upper(title) + string_repeat(s, right);
-		
-		_(final, color);
-	}
-	
-	#region stuff
-	
-	// Default
-	separator("MANIFEST");
-	_($"{Manifest.title} {Manifest.version} by {Manifest.author} (c) {Manifest.company}");
-	_($"FPS: {fps}");
-	
-	// Cursor
-	separator("CURSOR");
-	_($"busy: {bool_string(CursorBusy)}");
-	
-	// World
-	if (instance_exists(World)) {
-		separator("world");
-		var w = World;
-		_($"gs: {w.gameSpeed} tick: {w.getCurrentGameSpeed()}");
-	}
-	
-	#endregion
-	
-	
-	var scale = 1;
-	var sep = 16 * scale;
-	var len = array_length(content);
-	var width = 90 * (sep / 2);
-	
-	ALIGN_TOP_LEFT;
-	
-	draw_set_alpha(0.75);
-	draw_rectangle_colour(0, 0, width, len * sep, c_black, c_black, c_black, c_black, false);
-	draw_set_alpha(1);
-	
-	for (var i = 0; i < len; i++) {
-		var t = content[i];
-		var c = t.color;
-		draw_text_transformed_color(0, i * sep, t.text, scale, scale, 0, c, c, c, c, 1);
-	}
-	
-	ALIGN_MIDDLE_CENTER;
 }
 
 function draw_on_surface(surface, func=function(){}) {
@@ -95,73 +32,221 @@ function draw_on_surface(surface, func=function(){}) {
 	surface_reset_target();
 }
 
-function perlin() constructor {
-
-    static seed = function(seed_val = 0) {
-        random_set_seed(seed_val);
-        self.gradients = ds_map_create();
-        self.memory = ds_map_create();
-    }
-
-    static rand_vect = function() {
-        var theta = random(2 * pi);
-        return {
-            x: cos(theta),
-            y: sin(theta)
-        };
-    }
+//function perlin() constructor {
+//    static seed = function(seed_val = 0) {
+//        random_set_seed(seed_val);
+//        self.gradients = ds_map_create();
+//        self.memory = ds_map_create();
+//    }
 	
-    static dot_prod_grid = function(x, y, vx, vy) {
-        var key = string(vx) + "," + string(vy);
+//	static calculate = function(x, y, chunkSizes=[]){
+//		var p = 0;
+//		for (var i = 2; i < array_length(chunkSizes); i++) {
+//			p += self.get(x / chunkSizes[i][0], y / chunkSizes[i][1] / 2);
+//		}
+//		return p;
+//	}
+	
+//    static rand_vect = function() {
+//        var theta = random(2 * pi);
+//        return {
+//            x: cos(theta),
+//            y: sin(theta)
+//        };
+//    }
 
-        var g_vect;
-        if (ds_map_exists(self.gradients, key)) {
-            g_vect = self.gradients[? key];
-        } else {
-            g_vect = self.rand_vect();
-            self.gradients[? key] = g_vect;
+//    static dot_prod_grid = function(x, y, vx, vy) {
+//        var key = string(vx) + "," + string(vy);
+
+//        var g_vect;
+//        if (ds_map_exists(self.gradients, key)) {
+//            g_vect = self.gradients[? key];
+//        } else {
+//            g_vect = self.rand_vect();
+//            self.gradients[? key] = g_vect;
+//        }
+
+//        var dx = x - vx;
+//        var dy = y - vy;
+
+//        return dx * g_vect.x + dy * g_vect.y;
+//    }
+
+//    // Proper fade function (Perlin standard)
+//    static fade = function(t) {
+//        return t * t * t * (t * (t * 6 - 15) + 10);
+//    }
+
+//    static get = function(x, y) {
+
+//        var xf = floor(x);
+//        var yf = floor(y);
+
+//        var tx = x - xf;
+//        var ty = y - yf;
+
+//        tx = clamp(tx, 0, 1);
+//        ty = clamp(ty, 0, 1);
+
+//        var tl = self.dot_prod_grid(x, y, xf,   yf);
+//        var tr = self.dot_prod_grid(x, y, xf+1, yf);
+//        var bl = self.dot_prod_grid(x, y, xf,   yf+1);
+//        var br = self.dot_prod_grid(x, y, xf+1, yf+1);
+
+//        var u = self.fade(tx);
+//        var v = self.fade(ty);
+
+//        var top = lerp(tl, tr, u);
+//        var bottom = lerp(bl, br, u);
+
+//        return lerp(top, bottom, v);
+//    }
+//}
+
+function perlin(_seed = 0) constructor {
+
+    static seed = function(_s = 0) {
+        random_set_seed(_s);
+
+        var perm_size = 256;
+        var base = array_create(perm_size);
+        for (var i = 0; i < perm_size; i++) base[i] = i;
+
+        // Fisher-Yates shuffle - deterministic for a given seed
+        for (var i = perm_size - 1; i > 0; i--) {
+            var j = irandom(i);
+            var t = base[i];
+            base[i] = base[j];
+            base[j] = t;
         }
 
-        var dx = x - vx;
-        var dy = y - vy;
+        // Duplicate the table so indices like perm[X+1] never need bounds checks
+        self.perm = array_create(perm_size * 2);
+        for (var i = 0; i < perm_size * 2; i++) {
+            self.perm[i] = base[i & 255];
+        }
 
-        return dx * g_vect.x + dy * g_vect.y;
+        // One fixed random unit gradient per permutation slot.
+        // (Deterministic given the seed, unlike the old lazily-built hashmap.)
+        self.grad_x = array_create(perm_size);
+        self.grad_y = array_create(perm_size);
+        for (var i = 0; i < perm_size; i++) {
+            var theta = random(2 * pi);
+            self.grad_x[i] = cos(theta);
+            self.grad_y[i] = sin(theta);
+        }
+
+        return self;
     }
-	
-    // Proper fade function (Perlin standard)
+
     static fade = function(t) {
         return t * t * t * (t * (t * 6 - 15) + 10);
     }
-	
-    static get = function(x, y) {
 
-        var xf = floor(x);
-        var yf = floor(y);
-
-        var tx = x - xf;
-        var ty = y - yf;
-
-        tx = clamp(tx, 0, 1);
-        ty = clamp(ty, 0, 1);
-
-        var tl = self.dot_prod_grid(x, y, xf,   yf);
-        var tr = self.dot_prod_grid(x, y, xf+1, yf);
-        var bl = self.dot_prod_grid(x, y, xf,   yf+1);
-        var br = self.dot_prod_grid(x, y, xf+1, yf+1);
-
-        var u = self.fade(tx);
-        var v = self.fade(ty);
-
-        var top = lerp(tl, tr, u);
-        var bottom = lerp(bl, br, u);
-
-        return lerp(top, bottom, v);
+    static lerp = function(a, b, t) {
+        return a + t * (b - a);
     }
+
+    static grad = function(hash_val, x, y) {
+        var idx = hash_val & 255;
+        return self.grad_x[idx] * x + self.grad_y[idx] * y;
+    }
+
+    // Single-octave noise, returns roughly [-1, 1]
+    static get = function(x, y) {
+        var xi = floor(x);
+        var yi = floor(y);
+        var X = xi & 255;
+        var Y = yi & 255;
+
+        var xf = x - xi;
+        var yf = y - yi;
+
+        var u = self.fade(xf);
+        var v = self.fade(yf);
+
+        var perm = self.perm;
+        var aa = perm[perm[X    ] + Y    ];
+        var ab = perm[perm[X    ] + Y + 1];
+        var ba = perm[perm[X + 1] + Y    ];
+        var bb = perm[perm[X + 1] + Y + 1];
+
+        var x1 = self.lerp(self.grad(aa, xf,     yf    ), self.grad(ba, xf - 1, yf    ), u);
+        var x2 = self.lerp(self.grad(ab, xf,     yf - 1), self.grad(bb, xf - 1, yf - 1), u);
+
+        return self.lerp(x1, x2, v);
+    }
+
+    // Fractal Brownian Motion: layers octaves with proper amplitude/frequency falloff.
+    // _scale = size of the largest features (bigger = smoother/zoomed-out base layer).
+    // Returns a normalized value in roughly [-1, 1].
+    static fbm = function(x, y, _octaves = 4, _persistence = 0.5, _lacunarity = 2.0, _scale = 1.0) {
+        var total = 0;
+        var amplitude = 1;
+        var frequency = 1 / _scale;
+        var max_amp = 0;
+
+        for (var i = 0; i < _octaves; i++) {
+            total += self.get(x * frequency, y * frequency) * amplitude;
+            max_amp += amplitude;
+
+            amplitude *= _persistence;
+            frequency *= _lacunarity;
+        }
+
+        return (max_amp > 0) ? (total / max_amp) : 0;
+    }
+
+    // Same as fbm(), remapped to [0, 1] - handy for heightmaps / terrain thresholds.
+    static fbm01 = function(x, y, _octaves = 4, _persistence = 0.5, _lacunarity = 2.0, _scale = 1.0) {
+        return (self.fbm(x, y, _octaves, _persistence, _lacunarity, _scale) + 1) * 0.5;
+    }
+
+    // Backwards-compatible wrapper for your original API.
+    // chunkSizes: array of [scaleX, scaleY] or [scaleX, scaleY, amplitude] entries.
+    // Fixed: no longer skips the first two entries, no stray /2 on y, now
+    // amplitude-weighted and normalized instead of just summed.
+    static calculate = function(x, y, chunkSizes = []) {
+        var total = 0;
+        var max_amp = 0;
+
+        for (var i = 0; i < array_length(chunkSizes); i++) {
+            var entry = chunkSizes[i];
+            var sx  = entry[0];
+            var sy  = entry[1];
+            var amp = (array_length(entry) > 2) ? entry[2] : 1;
+
+            total += self.get(x / sx, y / sy) * amp;
+            max_amp += amp;
+        }
+		
+		var n = (max_amp > 0) ? (total / max_amp) : 0;
+		var n01 = (n + 1) * 0.5;
+		var n100 = n01 * 100;
+        return n100;
+    }
+
+    seed(_seed);
 }
 
-function lerp(a, b, t) {
-    return a + (b - a) * t;
-}
+/* ---------------------------------------------------------------------
+USAGE
+
+var noise = new perlin(12345);          // seed it once (e.g. in Create event)
+
+// Single octave, raw [-1,1]:
+var n = noise.get(x / 32, y / 32);
+
+// Multi-octave fractal terrain, normalized [-1,1] or [0,1]:
+var h = noise.fbm(x, y, 5, 0.5, 2.0, 64);   // 5 octaves, base feature size 64px
+var h01 = noise.fbm01(x, y, 5, 0.5, 2.0, 64);
+
+// Reseeding is cheap and fully replaces the permutation/gradient tables:
+noise.seed(999);
+
+// Old-style call still works, now correctly weighted/normalized:
+var v = noise.calculate(x, y, [[128,128,1], [32,32,0.5], [8,8,0.25]]);
+--------------------------------------------------------------------- */
 
 function invlerp(a, b, v) {
     return (v - a) / (b - a);
@@ -177,12 +262,6 @@ function smoothstep(a, b, t) {
     t = t * t * (3 - 2 * t);
     return lerp(a, b, t);
 }
-
-//function smootherstep(a, b, t) {
-//    t = clamp(t, 0, 1);
-//    t = t * t * t * (t * (t * 6 - 15) + 10);
-//    return lerp(a, b, t);
-//}
 
 function ease_in_quad(a, b, t) {
     return lerp(a, b, t * t);
@@ -230,7 +309,7 @@ function Table(owner=noone) constructor {
 	self.entries = [];
 	self.weightMax = 0;
 	self.owner = owner;
-	
+
 	static Roll = function(luck = 0) {
 	    var total = 0;
 
@@ -240,27 +319,27 @@ function Table(owner=noone) constructor {
 	    }
 
 	    var roll = random(total);
-		
+
 		print("=================================");
-		
+
 	    for (var i = 0; i < array_length(self.entries); i++) {
 	        var w = power(self.entries[i].weight, 1 - luck);
 			print($"{self.owner} rolled: {self.entries[i].value} with weight: {w}");
-			
+
 	        roll -= w;
 	        if (roll <= 0)
 	            return self.entries[i].value;
 	    }
-		
+
 		print("=================================");
 
 	    return undefined;
 	}
-	
+
 	static Random = function(){
 		return array_get_random(self.entries).value;
 	}
-	
+
 	static Set = function(value, weight){
 		array_push(self.entries, {
 			value : value,
@@ -278,7 +357,7 @@ function draw_sprite_stacked(spr, x, y, offset, xscale=1, yscale=1, rot=0, color
 
 function Maybe(value) constructor {
 	self.value = value;
-	
+
 	static Bind = function(fn) {
 		return new Maybe(fn(self.value));
 	}
@@ -316,7 +395,7 @@ function Node(value, children=[]) constructor {
 
 function tree_measure(node, spacing = 10) {
     var len = array_length(node.children);
-	
+
 	if (len == 0) {
         node.width = spacing;
         return node.width;
@@ -329,7 +408,7 @@ function tree_measure(node, spacing = 10) {
     }
 
     total += spacing * (len - 1);
-	
+
     node.width = total;
 
     return total;
@@ -346,15 +425,15 @@ function draw_node_tree(node, x, y, nodeStyle=Colorscheme.node) {
 	var size = nodeStyle.size;
 	var spacingY = size * 2;
 	var color = c_white;
-	
+
 	rect(x, y, size, size, c_black, false, 1);
 	rect(x, y, size, size, color, true, 1, 5);
-	
+
 	var children = node.children;
 	var len = array_length(children);
-	
+
 	if (len == 0) return;
-	
+
 	var childrenWidth = 0;
 
 	for (var i = 0; i < len; i++) {
@@ -362,19 +441,19 @@ function draw_node_tree(node, x, y, nodeStyle=Colorscheme.node) {
 	}
 
 	var startX = x - childrenWidth / 2;
-	
+
 	for (var i = 0; i < len; i++) {
 		var c = children[i];
-		
+
 		var xx = startX + c.width / 2;
 		var yy = y + spacingY;
-		
+
         //draw_line_width(x, y, xx, yy, 0.5);
 		draw_node_tree(c, xx, yy);
         startX += c.width;
 	}
-	
-	
+
+
 }
 
 function draw_rotated_rect(_x, _y, _w, _h, _angle, _col, _alpha)
@@ -441,7 +520,7 @@ function process_init() {
 		for (var i = 0; i < array_length(Process.list); i++) {
 			var p = Process.list[i];
 			var ret = p();
-			
+
 			if (ret) {
 				array_delete(Process.list, i, 1);
 				print($"PROCESS: completed ID '{i}'");
@@ -497,13 +576,13 @@ function get_relative_direction(obj) {
 
 function Children() constructor {
 	self.list = [];
-	
+
 	static Append = function(){
 		for (var i = 0; i < argument_count; i++) {
 			array_push(self.list, argument[i]);
 		}
 	}
-	
+
 	static ForEach = function(func = function(obj){}){
 		var len = array_length(self.list);
 		if (len == 0) then return;
@@ -512,7 +591,7 @@ function Children() constructor {
 			if (instance_exists(obj)) then func(obj);
 		}
 	}
-	
+
 	static DestroyAll = function() {
 		var len = array_length(self.list);
 		if (len == 0) then return;
@@ -527,7 +606,7 @@ function Instance(obj, x, y, components = {}) constructor {
 	self.object = obj;
 	self.pos = new Vec2(x, y);
 	self.components = components;
-	
+
 	static Create = function() {
 		var instance = instance_create_depth(self.pos.x, self.pos.y, 0, self.object);
 		struct_merge(instance, self.components);
@@ -535,24 +614,24 @@ function Instance(obj, x, y, components = {}) constructor {
 }
 
 function mouse_collision(orientation, x, y, width, height) {
-	
+
 	var mx = mouse_x;
 	var my = mouse_y;
-	
+
 	switch (orientation) {
 		case "top left":
 			return (
-				mx > x && 
+				mx > x &&
 				my > y &&
-				mx < x + width && 
+				mx < x + width &&
 				my < y + height
 			);
-		
+
 		case "center":
 			return (
-				mx > x - width / 2 && 
+				mx > x - width / 2 &&
 				my > y - height / 2 &&
-				mx < x + width / 2 && 
+				mx < x + width / 2 &&
 				my < y + height / 2
 			);
 	}
@@ -564,15 +643,15 @@ function signabs(x) {
 
 function DropTable() constructor {
 	self.table = [];
-	
+
 	static Add = function(itemID, chance, quantity) {
 		var drop = {};
 		drop.itemID = itemID;
 		drop.chance = chance;
-		drop.quantity = random_array_argument(quantity);
-		array_push(self.table, drop);
+		drop.quantity = quantity;
+		array_insert(self.table, chance*100, drop);
 	}
-	
+
 	static Get = function() {
 		for (var i = 0; i < array_length(self.table); i++) {
 			var drop = self.table[i];
@@ -580,50 +659,50 @@ function DropTable() constructor {
 			if (drop.chance < rand) {
 				return {
 					itemID : drop.itemID,
-					quantity : drop.quantity,
+					quantity : array_get_random(drop.quantity),
 				}
 			}
 		}
-		
+
 		return undefined;
 	}
-	
+
 }
 
 function SpriteStates() constructor {
 	self.states = ds_map_create();
 	self.currentState = "";
-	
+
 	static Set = function(stateID, name, sprite, condition) {
 		var state = {};
 		state.name = name;
 		state.sprite = sprite;
 		state.condition = condition;
-		
+
 		self.states[? stateID] = state;
 	}
-	
+
 	static Get = function() {
 		var keys = ds_map_keys_to_array(self.states);
 		array_sort(keys, true);
-		
+
 		var sprite = undefined;
 		var name = "";
-		
+
 		for (var i = 0; i < array_length(keys); i++) {
 			var state = self.states[? keys[i]];
 			var con = state.condition();
-			
+
 			if (con) {
 				name = state.name;
-				sprite = state.sprite; 
+				sprite = state.sprite;
 			}
 		}
-		
+
 		self.currentState = name;
 		return sprite;
 	}
-	
+
 }
 
 function sleep(val) {
@@ -643,12 +722,12 @@ function mouse_get_direction(x, y) {
 function interval_set(obj, time, fn, verbose=false) {
 	static tick = 0;
 	static alltimetick = 0;
-	
+
 	tick += 1;
 	alltimetick += 1;
-	
+
 	if (verbose) then print($"interval set : {tick}");
-	
+
 	if (tick >= time) {
 		fn(obj, alltimetick);
 		tick = 0;
@@ -659,29 +738,29 @@ function Registry() constructor {
 	self.entries = ds_map_create();
 	self.defaultComponents = {};
 	self.types = ds_map_create();
-	
+
 	static SetDefaultComponents = function(components) {
 		self.defaultComponents = components;
 	}
-	
+
 	static Register = function(val, components = {}, onRegister = function(val){}) {
 		var entry = {};
 		entry.components = {};
-		
+
 		struct_merge(entry.components, self.defaultComponents);
 		struct_merge(entry.components, components);
-		
+
 		self.entries[? val] = entry;
-		
+
 		print($"{val} : {components}");
-		
+
 		onRegister( val );
 	}
-	
+
 	static Get = function(val) {
 		return self.entries[? val] ?? undefined;
 	}
-	
+
 	static GetType = function(val) {
 		if (ds_map_exists(self.entries, val)) {
 			if (!variable_struct_exists(self.entries[? val], "components")) return;
@@ -692,60 +771,71 @@ function Registry() constructor {
 
 function Callback() constructor {
 	self.list = [];
-	
+	self.map = ds_map_create();
+
 	static Clear = function() {
 		self.list = [];
-	}	
-	
-	static Register = function(fn) {
-		array_push(self.list, {fn:fn});
+		ds_map_destroy(self.map);
+		self.map = ds_map_create();
 	}
 	
-	static Call = function(obj=undefined) {
+	static Register = function(fn, index=undefined) {
+		if (index == undefined) {
+			array_push(self.list, {fn:fn});
+		} else {
+			self.map[? index] = {fn:fn};
+		}
+	}
+	
+	static Remove = function(index) {
+		if (ds_map_exists(self.map, index)) {
+			ds_map_delete(self.map, index);
+		}
+	}
+
+	static Call = function(args=[]) {
 		var len = array_length(self.list);
 		for (var i = 0; i < len; i++) {
-			var cb = self.list[i];
-			
-			if (obj == undefined) 
-			then cb.fn();
-			else cb.fn( obj );
-			
-			// End of callbacks
-			if (i == len - 1) {
-			}
+			method_call(self.list[i].fn, args);
+		}
+		
+		var keys = ds_map_keys_to_array(self.map);
+		var maplen = array_length(keys);
+		for (var j = 0; j < maplen; j++) {
+			method_call(self.map[? keys[j]].fn, args);
 		}
 	}
 }
 
-function Stat(_value) constructor {
+function Stat(_value=100) constructor {
 	self.value = _value;
 	self.defaultValue = _value;
-	
+
 	static Sub = function(val) {
 		self.value -= val;
 	}
-	
+
 	static Add = function(val) {
 		self.value += val;
 	}
-	
+
 	static Set = function(val) {
 		self.value = val;
 	}
-	
+
 	static Reset = function(val) {
 		self.value = self.defaultValue;
 	}
-	
+
 	static GetPercentage = function() {
-		return (self.value / self.defaultValue) * 100;
+		return (self.value / self.defaultValue);
 	}
-	
+
 	static UpdateValue = function(val) {
 		self.value = val;
 		self.defaultValue = val;
 	}
-	
+
 }
 
 
@@ -761,31 +851,32 @@ function mouse_box_collision() {
 }
 
 function array_get_random(arr) {
+	if (!is_array(arr)) return arr;
 	var index = irandom(array_length(arr) - 1);
 	return arr[index];
 }
 
 function save_room_screenshot() {
 	var filename = room_get_name(room) + ".png";
-	
+
 	// Make camera see the entire room 1:1 ratio
 	var cam = camera_create_view(0, 0, room_width, room_height);
-	
+
 	view_set_visible(CAMERA_VIEWPORT_DEFAULT, false);
 	view_set_visible(1, true);
 	view_set_camera(1, cam);
-	
+
 	window_set_size(room_width, room_height);
-	
+
 	CameraViewport = 1;
-	
+
 	Player.isVisible = false;
 	Settings.graphics.drawUI = false;
-	
+
 	screen_save(filename);
-	
+
 	print($"Screenshot saved as {filename}");
-	
+
 	CameraViewport = 0;
 }
 
@@ -793,8 +884,7 @@ function position_get(o) {
 	return new Vec2(o.x, o.y);
 }
 
-function angle_lerp(a, b, t)
-{
+function angle_lerp(a, b, t) {
     var diff = angle_difference(b, a);
     return ((a + diff * t) + 360) mod 360;
 }
@@ -821,18 +911,18 @@ function format_number(n) {
 
 function merge_struct_into_instance(target, struct) {
   var keys = variable_struct_get_names(struct);
-	
+
   for (var i = 0; i < array_length(keys); i++) {
 		var index = struct_get(struct, keys[i]);
-		
+
 		if (is_method(index)) {
 			var value = index();
 			struct_set(struct, keys[i], value);
 		}
-		
+
     variable_instance_set(target, keys[i], index);
 	}
-	
+
 }
 
 function color_invert(color) {
@@ -864,7 +954,7 @@ function on_last_frame(fn) {
 
 function knockback_apply(threshold = 1) {
 	var knockbackFallout = 0.1;
-	
+
 	knockback.x = max(threshold, knockback.x - knockbackFallout * GameSpeed);
 	knockback.y = max(threshold, knockback.y - knockbackFallout * GameSpeed);
 }
@@ -887,58 +977,58 @@ function knockback_apply(threshold = 1) {
 
 function collision_set(obj, subpixel = 1) {
 	if (!instance_exists(obj)) return;
-	
+
 	var sp = 0.1;
-	
+
 	if (place_meeting(x + hsp, y, obj)) {
-		
+
 		var pixelCheck = subpixel * sign(hsp);
-		
+
 		// Slope up
 		if (!place_meeting(x + hsp, y - abs(hsp) - 1, obj)) {
-			
+
 			while (place_meeting(x + pixelCheck, y, obj)) {
 				y -= sp;
 				vsp = 0;
 			}
-			
+
 		} else {
- 			
-			var pixelCheck = subpixel * sign(hsp);
-			
+
+			pixelCheck = subpixel * sign(hsp);
+
 			while (!place_meeting(x + pixelCheck, y, obj)) {
 				x += sign(hsp);
 			}
-			
+
 			hsp = 0;
 			knockback.x = 0;
 		}
 	}
-	
+
 	if (place_meeting(x, y + vsp, obj)) {
 		var pixelCheck = subpixel * sign(vsp);
-		
+
 		while (!place_meeting(x, y + sign(vsp), obj)) {
 			y += sign(vsp);
 		}
-		
+
 		vsp = 0;
 		knockback.y = 0;
 	}
-	
+
 }
 
 function isometric_position(x, y) {
 	var x0, y0, xoffset = 0;
 	var w = TILE_WIDTH;
-	var h = TILE_HEIGHT - 4;
-	
-	if (y % 2 == true) then xoffset = w / 2;
-			
+	var h = TILE_HEIGHT;
+
+	if (y % 2 == 0) then xoffset = w / 2;
+
 	x0 = (x * w) + xoffset;
-	y0 = (y * (h / 2));
-	
-	return new Vec2(x0, y0);
+	y0 = (y * floor(h / 2));
+
+	return new Vec2(floor(x0), floor(y0));
 }
 
 function Vec2(x=0, y=0) constructor {
@@ -967,10 +1057,10 @@ function Dim(width=0, height=0) constructor {
 
 function sound3D(emitter, x, y, snd, loop, gain, pitch, offset = 0){
 	if (emitter == -1) {
-		return audio_play_sound_at(snd, x, y, 0, Sound.distance, Sound.dropoff, Sound.multiplier, 
+		return audio_play_sound_at(snd, x, y, 0, Sound.distance, Sound.dropoff, Sound.multiplier,
 			loop, -1, random_array_argument(gain), offset, random_array_argument(pitch));
 	}
-	
+
 	return audio_play_sound_on(emitter, snd, loop, 0, random_array_argument(gain), offset, random_array_argument(pitch));
 }
 
@@ -982,76 +1072,76 @@ function button(
 	orientation = 0, cursor = true
 ) {
 	var range;
-	
+
 	switch (orientation) {
 		case BUTTON_ORIGIN.Left:
-			
+
 			range = (mouse_x > x && mouse_x < x + width && mouse_y > y && mouse_y < y + height);
 			var hovered = range;
-			
+
 			// Draw outline
 			if (hasOutline) {
 				draw_rectangle_color(
-					x, y, 
-					x + width, y + height, 
+					x, y,
+					x + width, y + height,
 					outlineColor, outlineColor, outlineColor, outlineColor, true
 				);
 			}
-			
+
 			if (range) {
 				draw_set_alpha(hoverAlpha);
 				draw_rectangle_color(
-					x, y, 
-					x + width, y + height, 
+					x, y,
+					x + width, y + height,
 					hoverColor, hoverColor, hoverColor, hoverColor, false
 				);
 				draw_set_alpha(1);
-				
+
 				if (cursor) {
 					//set_cursor(CURSOR.Pointer);
 				}
-				
+
 				hoverFunction();
 			}
-			
+
 			draw_text_transformed(x, y, label, 0.5, 0.5, 1);
-			
+
 			break;
-		
+
 		case BUTTON_ORIGIN.MiddleCenter:
-			
+
 			range = (
-				mouse_x > x - width / 2 && 
-				mouse_x < x + width / 2 && 
-				mouse_y > y - height / 2 && 
+				mouse_x > x - width / 2 &&
+				mouse_x < x + width / 2 &&
+				mouse_y > y - height / 2 &&
 				mouse_y < y + height / 2
 			);
-			
+
 			// Draw outline
 			if (hasOutline) {
 				draw_rectangle_color(
-					x - width / 2, y - height / 2, 
-					x + width / 2, y + height / 2, 
+					x - width / 2, y - height / 2,
+					x + width / 2, y + height / 2,
 					outlineColor, outlineColor, outlineColor, outlineColor, true
 				);
 			}
-			
+
 			if (range) {
 				draw_set_alpha(hoverAlpha);
 				draw_rectangle_color(
-					x - width / 2, y - height / 2, 
-					x + width / 2, y + height / 2, 
+					x - width / 2, y - height / 2,
+					x + width / 2, y + height / 2,
 					hoverColor, hoverColor, hoverColor, hoverColor, false
 				);
 				draw_set_alpha(1);
-				
+
 				hoverFunction();
 			}
-			
+
 			draw_set_halign(fa_center);
 			draw_text_transformed(x, y+1, label, 0.5, 0.5, 0);
 			draw_set_halign(fa_left);
-			
+
 			break;
 	}
 }
@@ -1080,94 +1170,94 @@ function button_gui(
 	var mx, my;
 	mx = window_mouse_get_x();
 	my = window_mouse_get_y();
-	
+
 	var range;
-	
+
 	switch (orientation) {
 		case BUTTON_ORIGIN.Left:
-			
+
 			range = (mx > x && mx < x + width && my > y && my < y + height);
-			
+
 			// Draw outline
 			if (hasOutline) {
 				draw_set_alpha(alpha);
-				
+
 				draw_rectangle_color(
-					x, y, 
-					x + width, y + height, 
+					x, y,
+					x + width, y + height,
 					outlineColor, outlineColor, outlineColor, outlineColor, true
 				);
-				
+
 				draw_set_alpha(1);
 			}
-			
+
 			if (range) {
 				draw_set_alpha(hoverAlpha * alpha);
 				draw_rectangle_color(
-					x, y, 
-					x + width, y + height, 
+					x, y,
+					x + width, y + height,
 					hoverColor, hoverColor, hoverColor, hoverColor, false
 				);
 				draw_set_alpha(1);
-				
+
 				if (cursor) {
 					window_set_cursor(cr_handpoint);
 				}
-				
+
 				hoverFunction();
 			}
-			
+
 			draw_set_valign(fa_middle);
 			draw_text_color(x, y + height / 2, label, Style.textColor, Style.textColor, Style.textColor, Style.textColor, alpha);
 			draw_set_valign(fa_top);
-			
+
 			break;
-		
+
 		case BUTTON_ORIGIN.MiddleCenter:
-			
+
 			range = (
-				mx > x - width / 2 && 
-				mx < x + width / 2 && 
-				my > y - height / 2 && 
+				mx > x - width / 2 &&
+				mx < x + width / 2 &&
+				my > y - height / 2 &&
 				my < y + height / 2
 			);
-			
+
 			// Draw outline
 			if (hasOutline) {
 				draw_set_alpha(alpha);
 				draw_rectangle_color(
-					x - width / 2, y - height / 2, 
-					x + width / 2, y + height / 2, 
+					x - width / 2, y - height / 2,
+					x + width / 2, y + height / 2,
 					outlineColor, outlineColor, outlineColor, outlineColor, true
 				);
 				draw_set_alpha(1);
 			}
-			
+
 			if (range) {
 				draw_set_alpha(hoverAlpha * alpha);
 				draw_rectangle_color(
-					x - width / 2, y - height / 2, 
-					x + width / 2, y + height / 2, 
+					x - width / 2, y - height / 2,
+					x + width / 2, y + height / 2,
 					hoverColor, hoverColor, hoverColor, hoverColor, false
 				);
 				draw_set_alpha(1);
-				
+
 				if (cursor) {
 				}
-				
+
 				hoverFunction();
 			}
-			
+
 			draw_set_halign(fa_center);
 			draw_set_valign(fa_middle);
-			
+
 			draw_set_alpha(alpha);
 			draw_text(x, y, label);
 			draw_set_alpha(1);
-			
+
 			draw_set_halign(fa_left);
 			draw_set_valign(fa_top);
-			
+
 			break;
 	}
 }
@@ -1177,7 +1267,7 @@ function draw_3d(step, x, y, sprite, xscale, yscale, angle = 0, color = c_white,
 	for (var i = 0; i < sprite_get_number(sprite); i++) {
 		var yy = y - (i * step);
 		var c = color;
-		
+
 		if (smoothing) {
 			c = make_color_rgb(
 				color_get_red(color) + smoothOffset + i * smoothStep,
@@ -1185,7 +1275,7 @@ function draw_3d(step, x, y, sprite, xscale, yscale, angle = 0, color = c_white,
 				color_get_blue(color) + smoothOffset + i * smoothStep
 			);
 		}
-		
+
 		draw_sprite_ext(sprite, i, x, yy, xscale, yscale, angle, c, alpha);
 	}
 	draw_set_alpha(1);
@@ -1194,7 +1284,7 @@ function draw_3d(step, x, y, sprite, xscale, yscale, angle = 0, color = c_white,
 function save_id(file, save, prettify = false) {
 	var str = json_stringify(save, prettify);
 	var buffer = buffer_create(string_byte_length(str)+1, buffer_fixed, 1);
-	
+
 	buffer_write(buffer, buffer_text, str);
 	buffer_save(buffer, file);
 	buffer_delete(buffer);
@@ -1243,36 +1333,36 @@ function get_perlin_noise_2D(xx, yy, range, r = false, chunksize = 1){
 	while (chunkSize > 0){
 	  var index_x = xx div chunkSize;
 	  var index_y = yy div chunkSize;
-    
+
 	  var t_x = (xx % chunkSize) / chunkSize;
 	  var t_y = (yy % chunkSize) / chunkSize;
-    
+
 	  var r_00 = random_seed(range, index_x,   index_y);
 	  var r_01 = random_seed(range, index_x,   index_y + 1);
 	  var r_10 = random_seed(range, index_x+1, index_y);
 	  var r_11 = random_seed(range, index_x+1, index_y + 1);
-    
+
 		var r_0 = lerp(r_00, r_01, t_y);
 	  var r_1 = lerp(r_10, r_11, t_y);
-   
+
 	  noise += lerp(r_0, r_1, t_x);
-    
+
 	  chunkSize = chunkSize div 2;
 	  range = range div 2;
 	  range = max(1, range);
 	}
-	
+
 	if (r) {
 		return round(noise);
 	}
-	
+
 	return noise;
 }
 
 // Code from Arend Peter Teaches
 function random_seed(range){
 	var num = 0;
-	
+
 	switch(argument_count) {
 		case 2:
 			num = argument[1];
@@ -1281,7 +1371,7 @@ function random_seed(range){
 			num = argument[1] + argument[2] * 12409172;
 			break;
 	}
-	
+
 	var seed = 0;
 	seed += World.seed + num;
 
@@ -1296,10 +1386,10 @@ function rect(x, y, width, height, color = c_white, outline = false, alpha = 1, 
 		var step = size * 2;
 		draw_set_alpha(alpha);
 		draw_rectangle_color(
-			x - width / 2 + i / step, 
-			y - height / 2 + i / step, 
-			x + width / 2 - i / step, 
-			y + height / 2 - i / step, 
+			x - width / 2 + i / step,
+			y - height / 2 + i / step,
+			x + width / 2 - i / step,
+			y + height / 2 - i / step,
 			color, color, color, color, outline
 		);
 		draw_set_alpha(1);
@@ -1310,17 +1400,17 @@ function random_array_argument(array){
 	if (is_array(array)) {
 		return random_range(array[0], array[1]);
 	}
-	
+
 	return array;
 }
 
 
 //function opt(base, value) {
 //	var f = 60;
-	
+
 //  if (value > f) value = f;
 //  else if (value < 0) value = 0;
-    
+
 //  var factor = value / f;
 //  return base * factor;
 //}
@@ -1328,20 +1418,20 @@ function random_array_argument(array){
 
 function slider(val, x, y, width, height, handleWidth, color = c_white) {
 	var handleX = (x + val) - width / 2;
-	
+
 	draw_line_color(x - width/2, y, x + width/2, y, color, color);
-	
+
 	button_gui(handleX, y, handleWidth, height, "", -1, true, color, c_white, 1, 1, function(){
 		if (mouse_check_button(mb_left)) {
 			var mx = window_mouse_get_x();
 			var my = window_mouse_get_y();
-	
+
 			var pos = mx - x;
-			
+
 			return (pos);
 		}
 	}, BUTTON_ORIGIN.MiddleCenter);
-	
+
 }
 
 function mkdir(path) {

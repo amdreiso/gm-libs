@@ -1,6 +1,9 @@
 
 function console_init() 
 {
+	#macro log CONSOLE.Log
+	#macro err CONSOLE.Err
+	
 	enum eLogType {
 		ERROR,
 		LOG,
@@ -14,7 +17,7 @@ function console_init()
 		maxlogs			: 30,
 		logRewind		: -1,
 		scroll			: 0,
-		scrollSpeed		: 3,
+		scrollSpeed		: 8,
 		pos				: {x:1,y:1},
 	};
 	
@@ -29,7 +32,12 @@ function console_init()
 	
 		if (showHistory)
 			CONSOLE.Log("- "+input);
-	
+		
+		if (string_starts_with(command, "#")) {
+			CONSOLE.Run("color "+input);
+			return;
+		}
+		
 		// Run command from COMMAND registry
 		var cmd = COMMAND.Get(command);
 		if (cmd != undefined) {
@@ -39,7 +47,7 @@ function console_init()
 			if (argc != array_length(args) && argc != -1) {
 				CONSOLE.Err($"Missing {argc} arguments.");
 				return;
-			}		
+			}
 		
 			fn(args);
 			found = true;
@@ -228,8 +236,10 @@ function console_init()
 	}
 	
 	CONSOLE.Draw = function() {
-		var consoleCondition = Debug.showConsole;		// change it.
+		var consoleCondition = Debug.console;		// change it.
 		if (!consoleCondition) return;
+		
+		KeyboardBusy = true;
 		
 		CONSOLE.Update();
 		
@@ -294,7 +304,7 @@ function console_init()
 	
 		draw_set_font(defaultFont);
 	
-		var scale = 0.75;
+		var scale = 0.5;
 		var yyy = yy + 5;
 		draw_sprite_ext(sCats, 0, xx + width - 10 * scale, yyy + height, scale, scale, 0, c_white, 1);
 		
@@ -357,6 +367,7 @@ function command_data(){
 		_log("Programming by Andrei Scatolin",	c_aqua);
 		_log("Art by Andrei Scatolin",			c_aqua);
 		_log("Audio Design by Andrei Scatolin",	c_aqua);
+		_log("Special thank to the chud: Logan aka So_Damn_Close",	c_aqua);
 		_log("-------------------------------",	c_red);
 	});
 
@@ -366,6 +377,13 @@ function command_data(){
 
 	COMMAND.Register("clear", 0, function(args) {
 		CONSOLE.Clear();
+	});
+
+	COMMAND.Register("zoom", 1, function(args) {
+		try {
+			var value = real(args[0]);
+			Camera.zoom = value;
+		} catch (e){}
 	});
 
 	COMMAND.Register("spawn", 3, function(args) {
@@ -398,6 +416,26 @@ function command_data(){
 		}
 	
 		CONSOLE.Log(r);
+	});
+	
+	COMMAND.Register("color", 1, function(args) {
+		var str = args[0];
+		var _hex = string_replace_all(str, "#", "");
+		
+		var r,g,b;
+		r=0; g=0; b=0;
+		
+		try {
+			r = real("0x" + string_copy(_hex, 1, 2));
+			g = real("0x" + string_copy(_hex, 3, 2));
+			b = real("0x" + string_copy(_hex, 5, 2));
+			
+			var color = make_colour_rgb(r, g, b);
+			log("████████████████████", color);
+		} catch (e) {
+			err("Use real hexadecimal numbers");
+		}
+		
 	});
 
 }
