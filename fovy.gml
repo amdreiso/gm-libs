@@ -25,83 +25,222 @@ function fovy(){
 	}
 }
 
+function settings_init() {
+	G Settings;
+	Settings = settings_get();
+	
+	#macro SETTINGS_FILE "settings.json"
+}
+
+function settings_get(){
+	// Default settings
+	var stt = {
+		camera : {
+			shakeIntensity: 1,
+		},
+		
+		graphics : {
+			lighting: true,
+		},
+		
+		audio: {
+			volume: 1,
+			music: 0.75,
+			sfx: 1,
+			ui: 1,
+			zoomFalloff: 2,
+		},
+	};
+	
+	var load = settings_load();
+	struct_merge_recursive(stt, load);
+	
+	return stt;
+}
+
+function resolve(val) {
+	if (is_method(val)) {
+		return val();
+	}
+	return val;
+}
+
+function settings_save() {
+	//var file = SETTINGS_FILE;
+	//var content = json_stringify(Settings);
+	//var buffer = buffer_create(string_byte_length(content)+1, buffer_fixed, 1);
+	//buffer_write(buffer, buffer_string, content);
+	//buffer_save(buffer, file);
+	//buffer_delete(buffer);
+	
+	var file = ini_open("settings.ini");
+	ini_write_real("Audio", "volume", Settings.audio.volume);
+	ini_close();
+
+	Main.showSavingIcon = 4 * 60;
+}
+
+function settings_load() {
+	var file = SETTINGS_FILE;
+	if (!file_exists(file)) return {};
+	
+	var content = fread(fopen(file), buffer_string);
+	return json_parse(content);
+}
+
+function await_init() {
+	G Await;
+	Await = {};
+	Await.list = [];
+	Await.Register = function(milliseconds, f=function(){}) {
+		array_push(Await.list, {
+			ms: milliseconds,
+			fn: f,
+		});
+	}
+	Await.Run = function() {
+		for (var i = 0; i < array_length(Await.list); i++) {
+			var a = Await.list[i];
+			a.ms = max(0, a.ms - 1);
+			if (a.ms == 0) {
+				a.fn();
+				array_delete(Await.list, i, 1);
+			}
+		}
+	}
+}
+
+function sound_init() {
+	G SOUND; SOUND = {};
+	
+	enum eSoundType {
+		SFX,
+		MUSIC,
+		UI,
+	}
+	
+	var m = 1;
+	SOUND.distance		= 100 * m;
+	SOUND.dropoff		= 500 * m;
+	SOUND.multiplier	= 1;
+	
+	audio_falloff_set_model(audio_falloff_exponent_distance);
+	audio_listener_orientation(0, 1, 0, 0, 0, 1);
+	
+	SOUND.Play = function(type, snd, loop=false, gain=1, pitch=random_range(0.70, 1.00)){
+		var gainType = 1;
+
+		switch (type) {
+			case eSoundType.SFX:
+				gainType = Settings.audio.sfx;
+				break;
+
+			case eSoundType.MUSIC:
+				gainType = Settings.audio.music;
+				break;
+
+			case eSoundType.UI:
+				gainType = Settings.audio.UI;
+				break;
+		}
+
+		if (is_array(pitch)) {
+			if (array_length(pitch) > 1) then pitch = random_range(pitch[0], pitch[1]);
+		}
+		var g = gain * gainType * Settings.audio.volume;
+		return audio_play_sound(snd, 0, loop, g, 0, pitch);
+	}
+	
+	SOUND.GetRelativeGain = function(gain) {
+		return min(1, gain / (Camera.zoom * Settings.audio.zoomFalloff));
+	}
+	
+	SOUND.PlayCameraRelative = function(type, snd, loop=false, gain=1, pitch=random_range(0.70, 1.00)){
+		var gainType = 1;
+
+		switch (type) {
+			case eSoundType.SFX:
+				gainType = Settings.audio.sfx;
+				break;
+
+			case eSoundType.MUSIC:
+				gainType = Settings.audio.music;
+				break;
+
+			case eSoundType.UI:
+				gainType = Settings.audio.UI;
+				break;
+		}
+
+		if (is_array(pitch)) {
+			if (array_length(pitch) > 1) then pitch = random_range(pitch[0], pitch[1]);
+		}
+		var g = gain * gainType * Settings.audio.volume;
+		var actualgain = min(1, g / (Camera.zoom * Settings.audio.zoomFalloff))
+		return audio_play_sound(snd, 0, loop, actualgain, 0, pitch);
+	}
+
+	SOUND.PlayAt = function(type, snd, x, y, loop=false, gain=1, pitch=random_range(0.70, 1.00), offset=0){
+		var gainType = 1;
+
+		switch (type) {
+			case eSoundType.SFX:
+				gainType = Settings.audio.sfx;
+				break;
+
+			case eSoundType.MUSIC:
+				gainType = Settings.audio.music;
+				break;
+
+			case eSoundType.UI:
+				gainType = Settings.audio.UI;
+				break;
+		}
+
+		if (is_array(pitch)) {
+			if (array_length(pitch) > 1) then pitch = random_range(pitch[0], pitch[1]);
+		}
+		var g = gain * gainType * Settings.audio.volume;
+		return audio_play_sound_at(snd, x, y, 0, SOUND.distance, SOUND.dropoff, SOUND.multiplier, loop, 0, g, offset, pitch);
+	}
+	
+	SOUND.PlayOn = function(emitter, type, snd, loop=false, gain=1, pitch=random_range(0.70, 1.00), offset=0){
+		if (!audio_emitter_exists(emitter)) return;
+		
+		var gainType = 1;
+
+		switch (type) {
+			case eSoundType.SFX:
+				gainType = Settings.audio.sfx;
+				break;
+
+			case eSoundType.MUSIC:
+				gainType = Settings.audio.music;
+				break;
+
+			case eSoundType.UI:
+				gainType = Settings.audio.UI;
+				break;
+		}
+
+		if (is_array(pitch)) {
+			if (array_length(pitch) > 1) then pitch = random_range(pitch[0], pitch[1]);
+		}
+		var g = gain * gainType * Settings.audio.volume;
+		return audio_play_sound_on(emitter, snd, loop, 0, g, offset, pitch, 0);
+	}
+
+	SOUND.ListenerPosition = function(x, y) {
+		audio_listener_position(x, y, 0);
+	}
+}
+
 function draw_on_surface(surface, func=function(){}) {
 	if (!surface_exists(surface)) return;
 	surface_set_target(surface);
 	func();
 	surface_reset_target();
 }
-
-//function perlin() constructor {
-//    static seed = function(seed_val = 0) {
-//        random_set_seed(seed_val);
-//        self.gradients = ds_map_create();
-//        self.memory = ds_map_create();
-//    }
-	
-//	static calculate = function(x, y, chunkSizes=[]){
-//		var p = 0;
-//		for (var i = 2; i < array_length(chunkSizes); i++) {
-//			p += self.get(x / chunkSizes[i][0], y / chunkSizes[i][1] / 2);
-//		}
-//		return p;
-//	}
-	
-//    static rand_vect = function() {
-//        var theta = random(2 * pi);
-//        return {
-//            x: cos(theta),
-//            y: sin(theta)
-//        };
-//    }
-
-//    static dot_prod_grid = function(x, y, vx, vy) {
-//        var key = string(vx) + "," + string(vy);
-
-//        var g_vect;
-//        if (ds_map_exists(self.gradients, key)) {
-//            g_vect = self.gradients[? key];
-//        } else {
-//            g_vect = self.rand_vect();
-//            self.gradients[? key] = g_vect;
-//        }
-
-//        var dx = x - vx;
-//        var dy = y - vy;
-
-//        return dx * g_vect.x + dy * g_vect.y;
-//    }
-
-//    // Proper fade function (Perlin standard)
-//    static fade = function(t) {
-//        return t * t * t * (t * (t * 6 - 15) + 10);
-//    }
-
-//    static get = function(x, y) {
-
-//        var xf = floor(x);
-//        var yf = floor(y);
-
-//        var tx = x - xf;
-//        var ty = y - yf;
-
-//        tx = clamp(tx, 0, 1);
-//        ty = clamp(ty, 0, 1);
-
-//        var tl = self.dot_prod_grid(x, y, xf,   yf);
-//        var tr = self.dot_prod_grid(x, y, xf+1, yf);
-//        var bl = self.dot_prod_grid(x, y, xf,   yf+1);
-//        var br = self.dot_prod_grid(x, y, xf+1, yf+1);
-
-//        var u = self.fade(tx);
-//        var v = self.fade(ty);
-
-//        var top = lerp(tl, tr, u);
-//        var bottom = lerp(bl, br, u);
-
-//        return lerp(top, bottom, v);
-//    }
-//}
 
 function perlin(_seed = 0) constructor {
 
@@ -228,25 +367,6 @@ function perlin(_seed = 0) constructor {
 
     seed(_seed);
 }
-
-/* ---------------------------------------------------------------------
-USAGE
-
-var noise = new perlin(12345);          // seed it once (e.g. in Create event)
-
-// Single octave, raw [-1,1]:
-var n = noise.get(x / 32, y / 32);
-
-// Multi-octave fractal terrain, normalized [-1,1] or [0,1]:
-var h = noise.fbm(x, y, 5, 0.5, 2.0, 64);   // 5 octaves, base feature size 64px
-var h01 = noise.fbm01(x, y, 5, 0.5, 2.0, 64);
-
-// Reseeding is cheap and fully replaces the permutation/gradient tables:
-noise.seed(999);
-
-// Old-style call still works, now correctly weighted/normalized:
-var v = noise.calculate(x, y, [[128,128,1], [32,32,0.5], [8,8,0.25]]);
---------------------------------------------------------------------- */
 
 function invlerp(a, b, v) {
     return (v - a) / (b - a);
@@ -845,8 +965,8 @@ function show_object_status() {
 	}
 }
 
-function mouse_box_collision() {
-	var on = (mouse_x > bbox_left && mouse_x < bbox_right && mouse_y > bbox_top && mouse_y < bbox_bottom);
+function mouse_box_collision(left=bbox_left, right=bbox_right, top=bbox_top, bottom=bbox_bottom) {
+	var on = (mouse_x > left && mouse_x < right && mouse_y > top && mouse_y < bottom);
 	return on;
 }
 
